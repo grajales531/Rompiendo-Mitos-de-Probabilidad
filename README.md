@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Rompiendo Mitos de Probabilidad – Minijuegos Web 🎰
 
 Un casino educativo diseñado para demostrar visualmente por qué nuestra intuición suele fallar ante las leyes de la probabilidad. Este proyecto académico utiliza el estilo visual de los juegos de azar para explicar conceptos estadísticos y desmentir mitos comunes.
@@ -43,3 +44,6 @@ Para desplegar este proyecto y que sea accesible desde cualquier navegador:
 
 ---
 *Proyecto académico creado para la divulgación de la cultura matemática.*
+=======
+# Rompiendo-Mitos-de-Probabilidad
+>>>>>>> 6e2d901011f945a679b3b7fb2d66ae27b2e090c8
