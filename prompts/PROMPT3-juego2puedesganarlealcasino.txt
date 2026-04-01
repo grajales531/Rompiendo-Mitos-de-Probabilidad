@@ -1,0 +1,26 @@
+Crea el MINIJUEGO 2 llamado “¿Puedes ganarle al casino?”.
+
+Mito:
+“Si juegas suficiente tiempo, terminarás ganando.”
+
+Juego:
+- Ruleta animada
+- Apuestas a rojo, negro o verde
+- Fichas iniciales: 100
+- Apuestas de 10 en 10 hasta 100
+- Puede bajar hasta -1000 fichas
+- Si gana: duplica lo apostado
+- Si pierde: pierde lo apostado
+- El usuario decide cuándo salir
+
+Mostrar al final:
+- Dinero inicial
+- Dinero final
+- Mensaje: a largo plazo el jugador pierde
+
+Incluye diseño visual atractivo estilo casino.
+
+Genera:
+HTML + CSS + JS
+Archivo:
+/games/juego2.html

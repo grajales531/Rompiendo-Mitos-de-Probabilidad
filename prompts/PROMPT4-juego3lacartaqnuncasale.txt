@@ -1,0 +1,25 @@
+Crea el MINIJUEGO 3 llamado “La carta que nunca sale”.
+
+Mito:
+“Si una carta no ha salido en mucho tiempo, ahora es más probable.”
+
+Juego:
+- Baraja animada de 20 cartas
+- El usuario elige una carta
+- Robar:
+  - 1 carta
+  - 20 cartas
+- Las cartas pueden repetirse
+- Mostrar:
+  - Frecuencia de cada carta
+  - Aciertos y errores
+  - Cambios de carta
+- Sistema de fichas:
+  - Empieza con 1000
+  - Acierto: +10
+  - Error: -10
+
+Objetivo:
+Demostrar que no existe memoria en eventos independientes.
+
+Genera archivos completos del juego.

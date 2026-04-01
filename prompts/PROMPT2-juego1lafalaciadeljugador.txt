@@ -1,0 +1,27 @@
+Crea el MINIJUEGO 1 llamado “La falacia del jugador”.
+
+Mito:
+“Si algo ha pasado muchas veces seguidas, ahora es menos probable que vuelva a pasar.”
+
+Juego:
+- Simulador de lanzamiento de moneda (cara o cruz)
+- Animación de la moneda
+- Opción de lanzar:
+  - 1 vez
+  - 20 veces seguidas
+- El usuario elige qué cree que caerá
+- Mostrar:
+  - Historial de resultados
+  - Contador de caras y cruces
+  - Veces que el usuario acertó
+- Demostrar que la probabilidad siempre es 50/50
+
+Incluye:
+- HTML
+- CSS
+- JavaScript
+- Explicación del mito
+- Conclusión clara
+
+Guarda el juego como:
+/games/juego1.html

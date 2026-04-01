@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego 7: Patrones Invisibles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --casino-green: #0a4d2e;
+            --gold: #d4af37;
+            --dark: #0f0f0f;
+            --text-light: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark);
+            color: var(--text-light);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, var(--casino-green) 0%, var(--dark) 80%);
+        }
+
+        .back-btn {
+            position: absolute; top: 20px; left: 20px; color: var(--gold);
+            text-decoration: none; border: 1px solid var(--gold); padding: 5px 15px;
+            border-radius: 5px; transition: 0.3s;
+        }
+        .back-btn:hover { background: var(--gold); color: var(--dark); }
+
+        header { text-align: center; padding: 2rem; }
+        h1 { font-family: 'Goldman', cursive; color: var(--gold); }
+
+        .myth-box {
+            background: rgba(0, 0, 0, 0.6); border-left: 5px solid var(--gold);
+            padding: 1rem; margin: 1rem; max-width: 800px; border-radius: 0 10px 10px 0;
+        }
+
+        .game-layout {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem;
+            max-width: 1100px; width: 95%; margin-bottom: 2rem;
+        }
+
+        .wheel-section {
+            flex: 1; min-width: 350px; background: rgba(255, 255, 255, 0.05);
+            padding: 2rem; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+        }
+
+        .number-picker {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .num-btn {
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--gold);
+            background: transparent; color: var(--gold); font-weight: bold;
+            cursor: pointer; transition: 0.2s;
+        }
+        .num-btn.selected { background: var(--gold); color: var(--dark); transform: scale(1.2); }
+
+        .spinner-container {
+            width: 200px; height: 200px; border: 5px solid var(--gold);
+            border-radius: 50%; margin: 2rem auto; position: relative;
+            background: #111; display: flex; align-items: center; justify-content: center;
+        }
+        .spinner-num { font-size: 5rem; font-family: 'Goldman', cursive; color: white; }
+        .spinner-active { animation: flicker 0.1s infinite; }
+
+        @keyframes flicker {
+            0% { opacity: 0.2; }
+            100% { opacity: 1; }
+        }
+
+        .stats-panel {
+            flex: 0 0 320px; background: rgba(0, 0, 0, 0.4); padding: 1.5rem;
+            border-radius: 15px; border: 1px solid var(--gold);
+        }
+
+        .chart-container {
+            height: 150px; display: flex; align-items: flex-end; gap: 5px;
+            margin: 1.5rem 0; border-bottom: 1px solid #555; padding-bottom: 5px;
+        }
+        .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+        .bar { width: 100%; background: var(--gold); min-height: 2px; transition: height 0.3s; }
+        .bar-label { font-size: 0.6rem; margin-top: 5px; }
+
+        .history-list {
+            height: 100px; overflow-y: auto; background: rgba(0,0,0,0.3);
+            padding: 10px; border-radius: 5px; font-family: monospace; font-size: 0.8rem;
+        }
+
+        .conclusion {
+            background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold);
+            padding: 1.5rem; margin: 2rem; max-width: 800px; border-radius: 10px;
+            text-align: center; display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Volver al Menú</a>
+
+    <header>
+        <h1>Patrones Invisibles</h1>
+    </header>
+
+    <div class="myth-box">
+        <p><strong>MITO:</strong> "Los números tienen patrones. Si el 7 ha salido dos veces, seguro que hay una racha o que no volverá a salir en mucho tiempo."</p>
+    </div>
+
+    <main class="game-layout">
+        <section class="wheel-section">
+            <p>Elige el número que crees que saldrá:</p>
+            <div class="number-picker" id="numPicker"></div>
+
+            <div class="spinner-container">
+                <div class="spinner-num" id="spinValue">?</div>
+            </div>
+
+            <button class="num-btn" style="width:auto; padding: 10px 30px; border-radius: 5px;" onclick="spin()">¡GIRAR!</button>
+            <p id="status-text" style="margin-top:1.5rem;">Costo por tiro: 10 fichas</p>
+        </section>
+
+        <section class="stats-panel">
+            <div style="text-align:center; border-bottom:1px solid var(--gold); padding-bottom:10px;">
+                <p style="font-size:0.8rem; margin:0;">FICHAS</p>
+                <h2 id="balance" style="color:var(--gold); margin:0;">1000</h2>
+            </div>
+
+            <p style="margin-top:1rem; font-size:0.9rem;">Distribución de resultados:</p>
+            <div class="chart-container" id="chart"></div>
+
+            <div style="display:flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 1rem;">
+                <span>Aciertos: <span id="hits">0</span></span>
+                <span>Fallos: <span id="misses">0</span></span>
+            </div>
+
+            <div class="history-list" id="history"></div>
+        </section>
+    </main>
+
+    <div class="conclusion" id="conclusionBox">
+        <h3>💡 Conclusión Matemática</h3>
+        <p>Aunque el cerebro humano busca patrones (apofenia), cada giro es un evento independiente. Al final, tras muchos tiros, verás que la distribución es uniforme: todos los números tienden a salir el mismo número de veces. Los "patrones" son solo coincidencias temporales.</p>
+    </div>
+
+    <script>
+        let balance = 1000;
+        let selectedNum = 1;
+        let hits = 0;
+        let misses = 0;
+        let total = 0;
+        let counts = new Array(11).fill(0); // 1-10
+        let isSpinning = false;
+
+        function init() {
+            const picker = document.getElementById('numPicker');
+            const chart = document.getElementById('chart');
+
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.className = `num-btn ${i === 1 ? 'selected' : ''}`;
+                btn.innerText = i;
+                btn.id = `btn-${i}`;
+                btn.onclick = () => select(i);
+                picker.appendChild(btn);
+
+                const barWrap = document.createElement('div');
+                barWrap.className = 'bar-wrap';
+                barWrap.innerHTML = `
+                    <div class="bar" id="bar-${i}" style="height:2px"></div>
+                    <div class="bar-label">${i}</div>
+                `;
+                chart.appendChild(barWrap);
+            }
+        }
+
+        function select(n) {
+            if (isSpinning) return;
+            document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById(`btn-${n}`).classList.add('selected');
+            selectedNum = n;
+        }
+
+        function spin() {
+            if (isSpinning || balance < 10) return;
+
+            balance -= 10;
+            isSpinning = true;
+            document.getElementById('balance').innerText = balance;
+            
+            const spinVal = document.getElementById('spinValue');
+            spinVal.classList.add('spinner-active');
+            
+            let counter = 0;
+            const interval = setInterval(() => {
+                spinVal.innerText = Math.floor(Math.random() * 10) + 1;
+                counter++;
+                if (counter > 20) {
+                    clearInterval(interval);
+                    const result = Math.floor(Math.random() * 10) + 1;
+                    finishSpin(result);
+                }
+            }, 50);
+        }
+
+        function finishSpin(res) {
+            const spinVal = document.getElementById('spinValue');
+            spinVal.classList.remove('spinner-active');
+            spinVal.innerText = res;
+            isSpinning = false;
+            
+            total++;
+            counts[res]++;
+            
+            const win = res === selectedNum;
+            if (win) {
+                hits++;
+                balance += 10;
+            } else {
+                misses++;
+            }
+
+            updateUI(res, win);
+            if (total >= 10) document.getElementById('conclusionBox').style.display = 'block';
+        }
+
+        function updateUI(res, win) {
+            document.getElementById('balance').innerText = balance;
+            document.getElementById('hits').innerText = hits;
+            document.getElementById('misses').innerText = misses;
+
+            const entry = document.createElement('div');
+            entry.innerText = `#${total}: Salió ${res} | Tu apuesta: ${selectedNum} ${win ? '✅' : '❌'}`;
+            const hist = document.getElementById('history');
+            hist.prepend(entry);
+
+            const max = Math.max(...counts, 1);
+            for (let i = 1; i <= 10; i++) {
+                const perc = (counts[i] / max) * 100;
+                document.getElementById(`bar-${i}`).style.height = perc + '%';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

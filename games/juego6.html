@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego 6: Loot Box Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --casino-green: #0a4d2e;
+            --gold: #d4af37;
+            --dark: #0f0f0f;
+            --text-light: #e0e0e0;
+            --common: #a0a0a0;
+            --rare: #3498db;
+            --epic: #9b59b6;
+            --legendary: #f1c40f;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark);
+            color: var(--text-light);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, var(--casino-green) 0%, var(--dark) 80%);
+        }
+
+        .back-btn {
+            position: absolute; top: 20px; left: 20px; color: var(--gold);
+            text-decoration: none; border: 1px solid var(--gold); padding: 5px 15px;
+            border-radius: 5px; transition: 0.3s;
+        }
+        .back-btn:hover { background: var(--gold); color: var(--dark); }
+
+        header { text-align: center; padding: 2rem; }
+        h1 { font-family: 'Goldman', cursive; color: var(--gold); }
+
+        .myth-box {
+            background: rgba(0, 0, 0, 0.6); border-left: 5px solid var(--gold);
+            padding: 1rem; margin: 1rem; max-width: 800px; border-radius: 0 10px 10px 0;
+        }
+
+        .main-container {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem;
+            max-width: 1100px; width: 95%; margin-bottom: 2rem;
+        }
+
+        .box-zone {
+            flex: 1; min-width: 350px; background: rgba(255, 255, 255, 0.05);
+            padding: 2rem; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+        }
+
+        .chest-visual {
+            font-size: 6rem; cursor: pointer; transition: transform 0.2s;
+            margin: 2rem 0; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+        .chest-visual:hover { transform: scale(1.1) rotate(5deg); }
+        .chest-visual.opening { animation: shake 0.5s infinite; }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        }
+
+        .reward-pool {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+            min-height: 120px; margin-top: 1rem;
+        }
+
+        .item-card {
+            width: 80px; padding: 10px; border-radius: 10px; background: #222;
+            border: 2px solid #444; text-align: center; animation: popIn 0.3s forwards;
+        }
+        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .item-common { border-color: var(--common); color: var(--common); }
+        .item-rare { border-color: var(--rare); color: var(--rare); box-shadow: 0 0 10px var(--rare); }
+        .item-epic { border-color: var(--epic); color: var(--epic); box-shadow: 0 0 15px var(--epic); }
+        .item-legendary { border-color: var(--legendary); color: var(--legendary); box-shadow: 0 0 20px var(--legendary); animation: glow 1s infinite alternate; }
+
+        @keyframes glow { from { box-shadow: 0 0 10px var(--legendary); } to { box-shadow: 0 0 30px var(--legendary); } }
+
+        .controls { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
+        .btn-buy {
+            background: var(--gold); color: var(--dark); border: none;
+            padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;
+        }
+        .btn-buy:disabled { background: #555; cursor: not-allowed; }
+
+        .stats-panel {
+            flex: 0 0 280px; background: rgba(0, 0, 0, 0.4); padding: 1.5rem;
+            border-radius: 15px; border: 1px solid var(--gold);
+        }
+
+        .prob-table { width: 100%; font-size: 0.9rem; margin-top: 1rem; border-collapse: collapse; }
+        .prob-table td { padding: 5px; border-bottom: 1px solid #333; }
+        .dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+
+        .conclusion {
+            background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold);
+            padding: 1.5rem; margin: 2rem; max-width: 800px; border-radius: 10px;
+            text-align: center; display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Volver al Menú</a>
+
+    <header>
+        <h1>Loot Box Simulator</h1>
+    </header>
+
+    <div class="myth-box">
+        <p><strong>MITO:</strong> "Si compro suficientes cajas, la suerte se acumula y el objeto legendario saldrá garantizado. ¡Estoy a una caja de ganar!"</p>
+    </div>
+
+    <main class="main-container">
+        <section class="box-zone">
+            <div id="chest" class="chest-visual" onclick="buy(1)">🎁</div>
+            <div class="reward-pool" id="rewardPool"></div>
+            
+            <div class="controls">
+                <button class="btn-buy" id="btn1" onclick="buy(1)">Comprar 1 caja (10 fichas)</button>
+                <button class="btn-buy" id="btn10" onclick="buy(10)">Comprar 10 cajas (90 fichas)</button>
+            </div>
+            <p id="status-text" style="margin-top:1rem;">Haz clic en el regalo o usa los botones.</p>
+        </section>
+
+        <section class="stats-panel">
+            <div style="text-align:center; border-bottom:1px solid var(--gold); padding-bottom:10px;">
+                <p style="font-size:0.8rem; margin:0;">TUS FICHAS</p>
+                <h2 id="balance" style="color:var(--gold); margin:0;">1000</h2>
+            </div>
+            
+            <table class="prob-table">
+                <tr><td><span class="dot" style="background:var(--common)"></span> Común</td><td style="text-align:right">70%</td></tr>
+                <tr><td><span class="dot" style="background:var(--rare)"></span> Raro</td><td style="text-align:right">20%</td></tr>
+                <tr><td><span class="dot" style="background:var(--epic)"></span> Épico</td><td style="text-align:right">9%</td></tr>
+                <tr><td><span class="dot" style="background:var(--legendary)"></span> Legendario</td><td style="text-align:right">1%</td></tr>
+            </table>
+
+            <div style="margin-top:1.5rem;">
+                <p>Cajas abiertas: <span id="totalBoxes">0</span></p>
+                <p>Legendarios: <span id="countLegendary">0</span></p>
+                <p>Épicos: <span id="countEpic">0</span></p>
+            </div>
+        </section>
+    </main>
+
+    <div class="conclusion" id="conclusionBox">
+        <h3>💡 Conclusión Matemática</h3>
+        <p>Incluso con un 1% de probabilidad, tras abrir 100 cajas, la probabilidad de <strong>no haber obtenido</strong> ningún legendario es de aproximadamente un <strong>36.6%</strong>. Las cajas no "recuerdan" lo que salió antes; cada apertura es un evento nuevo con las mismas bajas probabilidades.</p>
+    </div>
+
+    <script>
+        let balance = 1000;
+        let totalBoxes = 0;
+        let legendaries = 0;
+        let epics = 0;
+        let isOpening = false;
+
+        const items = [
+            { name: 'Común', prob: 0.70, class: 'item-common', icon: '⚪' },
+            { name: 'Raro', prob: 0.90, class: 'item-rare', icon: '🔵' },
+            { name: 'Épico', prob: 0.99, class: 'item-epic', icon: '🟣' },
+            { name: 'Legendario', prob: 1.00, class: 'item-legendary', icon: '🟡' }
+        ];
+
+        function buy(count) {
+            if (isOpening) return;
+            const cost = count === 10 ? 90 : 10;
+            
+            if (balance < cost) {
+                alert("No tienes suficientes fichas.");
+                return;
+            }
+
+            balance -= cost;
+            isOpening = true;
+            document.getElementById('balance').innerText = balance;
+            
+            const chest = document.getElementById('chest');
+            chest.classList.add('opening');
+            document.getElementById('rewardPool').innerHTML = '';
+            
+            setTimeout(() => {
+                chest.classList.remove('opening');
+                for(let i=0; i<count; i++) {
+                    const result = roll();
+                    addReward(result);
+                }
+                isOpening = false;
+                updateStats();
+                if (totalBoxes >= 10) document.getElementById('conclusionBox').style.display = 'block';
+            }, 600);
+        }
+
+        function roll() {
+            const r = Math.random();
+            for (let item of items) {
+                if (r < item.prob) return item;
+            }
+            return items[0];
+        }
+
+        function addReward(item) {
+            totalBoxes++;
+            if (item.name === 'Legendario') legendaries++;
+            if (item.name === 'Épico') epics++;
+
+            const div = document.createElement('div');
+            div.className = `item-card ${item.class}`;
+            div.innerHTML = `<div style="font-size:1.5rem">${item.icon}</div><div style="font-size:0.7rem">${item.name}</div>`;
+            document.getElementById('rewardPool').appendChild(div);
+        }
+
+        function updateStats() {
+            document.getElementById('totalBoxes').innerText = totalBoxes;
+            document.getElementById('countLegendary').innerText = legendaries;
+            document.getElementById('countEpic').innerText = epics;
+        }
+    </script>
+</body>
+</html>

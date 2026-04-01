@@ -1,0 +1,18 @@
+Crea el MINIJUEGO 5 llamado “¿La suerte mejora con más intentos?”.
+
+Mito:
+“Si intento muchas veces, seguro lo logro.”
+
+Juego:
+- Premio raro con 5% de probabilidad por intento
+- 1000 fichas iniciales
+- Cada intento cuesta 10 fichas
+- Barra de progreso
+- Contador de intentos
+- Animación de premio
+
+Conclusión:
+No está garantizado ganar aunque se intente muchas veces.
+
+Genera el juego completo.
+``

@@ -1,0 +1,20 @@
+Crea el MINIJUEGO 6 llamado “Loot box simulator”.
+
+Mito:
+“Si compras muchas cajas, seguro obtendrás el legendario.”
+
+Juego:
+- Cajas animadas (gacha)
+- Probabilidades:
+  - Común 80%
+  - Raro 50%
+  - Épico 20%
+  - Legendario 5%
+- Comprar:
+  - 1 mazo (10 fichas)
+  - 10 mazos (90 fichas)
+- 1000 fichas iniciales
+- Mostrar progreso y resultados
+
+Demostrar dificultad real de obtener el legendario.
+``

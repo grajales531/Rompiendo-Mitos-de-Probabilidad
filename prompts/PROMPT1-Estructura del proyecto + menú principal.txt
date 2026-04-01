@@ -1,0 +1,18 @@
+Genera la estructura completa del proyecto para el sitio:
+
+- index.html (menú principal)
+- carpeta /css
+- carpeta /js
+- carpeta /games con 8 HTML
+- estilo visual tipo casino moderno
+
+El menú principal debe:
+- Tener animaciones
+- Botones grandes
+- Navegar a cada uno de los 8 juegos
+- Explicar brevemente el objetivo del sitio
+
+Dame:
+1. Árbol de carpetas
+2. Código completo de index.html
+3. Código de styles.css para el menú

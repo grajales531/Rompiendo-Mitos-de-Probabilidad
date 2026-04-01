@@ -1,0 +1,14 @@
+Crea el MINIJUEGO 8 llamado “La ilusión de la precisión”.
+
+Mito:
+“Si algo casi ocurre, significa que estamos cerca de lograrlo.”
+
+Juego:
+- Tragamonedas con 3 rodillos
+- Muchas combinaciones casi ganadoras
+- Solo gana si los 3 símbolos son iguales
+- 1000 fichas
+- Cada tiro cuesta 10
+- Diferentes recompensas por combinación
+
+Explicar que los casi aciertos no cambian la probabilidad.

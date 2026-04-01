@@ -1,0 +1,23 @@
+Crea el MINIJUEGO 4 llamado “Contagio en el salón”.
+
+Mito:
+“Un contagio ocurre al azar y no depende del contacto.”
+
+Juego:
+- Mapa con personas animadas
+- Una persona inicia infectada
+- Contagio ocurre por contacto
+- El usuario predice quién se contagiará
+- Puede modificar:
+  - Probabilidad de contagio
+  - Número de contactos
+- Sistema de fichas (+10 / -10)
+
+Mostrar crecimiento visual del contagio.
+
+Conceptos:
+- Eventos dependientes
+- Probabilidad condicional
+
+Genera HTML, CSS y JS.
+``

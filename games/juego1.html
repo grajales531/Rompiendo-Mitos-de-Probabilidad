@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego 1: La Falacia del Jugador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --casino-green: #0a4d2e;
+            --gold: #d4af37;
+            --dark: #0f0f0f;
+            --text-light: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark);
+            color: var(--text-light);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, var(--casino-green) 0%, var(--dark) 80%);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--gold);
+            text-decoration: none;
+            border: 1px solid var(--gold);
+            padding: 5px 15px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--gold);
+            color: var(--dark);
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: 'Goldman', cursive;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        .myth-box {
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 5px solid var(--gold);
+            padding: 1rem;
+            margin: 1rem;
+            max-width: 800px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            max-width: 1000px;
+            width: 90%;
+            margin-bottom: 2rem;
+        }
+
+        .main-stage {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        /* Moneda 3D */
+        .coin-wrapper {
+            perspective: 1000px;
+            width: 150px;
+            height: 150px;
+            margin: 2rem auto;
+        }
+
+        .coin {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s ease-in-out;
+        }
+
+        .coin div {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border: 5px solid var(--gold);
+        }
+
+        .heads { background: radial-gradient(circle, #ffd700, #b8860b); z-index: 2; }
+        .tails { background: radial-gradient(circle, #c0c0c0, #708090); transform: rotateY(180deg); }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .prediction-buttons button {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+
+        .prediction-buttons button.active {
+            background: var(--gold);
+            color: var(--dark);
+        }
+
+        .action-buttons button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 5px;
+        }
+
+        .action-buttons button:hover { transform: scale(1.05); }
+        .action-buttons button:disabled { background: #6c757d; cursor: not-allowed; }
+
+        .stats-panel {
+            flex: 0 0 250px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--gold);
+        }
+
+        .history-list {
+            height: 150px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            padding: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .conclusion {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--gold);
+            padding: 1.5rem;
+            margin: 2rem;
+            max-width: 800px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        @keyframes flipHeads {
+            from { transform: rotateY(0); }
+            to { transform: rotateY(1800deg); }
+        }
+
+        @keyframes flipTails {
+            from { transform: rotateY(0); }
+            to { transform: rotateY(1980deg); }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Volver al Menú</a>
+
+    <header>
+        <h1>La Falacia del Jugador</h1>
+    </header>
+
+    <div class="myth-box">
+        <p><strong>MITO:</strong> "Si algo ha pasado muchas veces seguidas (como salir cara 5 veces), ahora es más probable que salga lo contrario (cruz) para 'equilibrar' la suerte."</p>
+    </div>
+
+    <main class="game-container">
+        <section class="main-stage">
+            <p>Elige tu predicción y lanza la moneda:</p>
+            
+            <div class="prediction-buttons" id="predictionZone">
+                <button onclick="setPrediction('cara')" id="btn-cara">CARA</button>
+                <button onclick="setPrediction('cruz')" id="btn-cruz">CRUZ</button>
+            </div>
+
+            <div class="coin-wrapper">
+                <div class="coin" id="coin">
+                    <div class="heads">🪙</div>
+                    <div class="tails">💰</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button onclick="toss(1)" id="btn-toss-1">Lanzar 1 vez</button>
+                <button onclick="toss(20)" id="btn-toss-20">Lanzar 20 veces</button>
+            </div>
+            <p id="status-text">Esperando lanzamiento...</p>
+        </section>
+
+        <section class="stats-panel">
+            <h3>Estadísticas</h3>
+            <p>Lanzamientos: <span id="total-tosses">0</span></p>
+            <p>Caras: <span id="count-heads">0</span> (<span id="perc-heads">0</span>%)</p>
+            <p>Cruces: <span id="count-tails">0</span> (<span id="perc-tails">0</span>%)</p>
+            <hr>
+            <p>Aciertos usuario: <span id="user-hits">0</span></p>
+            
+            <h4>Historial:</h4>
+            <div class="history-list" id="history"></div>
+        </section>
+    </main>
+
+    <div class="conclusion" id="conclusion-box">
+        <h3>💡 Conclusión Matemática</h3>
+        <p>Como has podido ver, la moneda <strong>no tiene memoria</strong>. Aunque salgan 10 caras seguidas, la probabilidad del siguiente lanzamiento sigue siendo exactamente del <strong>50%</strong>. Cada evento es independiente.</p>
+    </div>
+
+    <script>
+        let prediction = 'cara';
+        let total = 0;
+        let heads = 0;
+        let tails = 0;
+        let hits = 0;
+        let isAnimating = false;
+
+        function setPrediction(p) {
+            prediction = p;
+            document.getElementById('btn-cara').className = p === 'cara' ? 'active' : '';
+            document.getElementById('btn-cruz').className = p === 'cruz' ? 'active' : '';
+        }
+
+        function updateStats() {
+            document.getElementById('total-tosses').innerText = total;
+            document.getElementById('count-heads').innerText = heads;
+            document.getElementById('count-tails').innerText = tails;
+            document.getElementById('user-hits').innerText = hits;
+            
+            const pHeads = total === 0 ? 0 : Math.round((heads / total) * 100);
+            const pTails = total === 0 ? 0 : Math.round((tails / total) * 100);
+            
+            document.getElementById('perc-heads').innerText = pHeads;
+            document.getElementById('perc-tails').innerText = pTails;
+
+            if (total >= 10) {
+                document.getElementById('conclusion-box').style.display = 'block';
+            }
+        }
+
+        function toss(times) {
+            if (isAnimating) return;
+            
+            const coin = document.getElementById('coin');
+            const status = document.getElementById('status-text');
+            const history = document.getElementById('history');
+
+            if (times === 1) {
+                isAnimating = true;
+                const result = Math.random() < 0.5 ? 'cara' : 'cruz';
+                
+                // Animación
+                coin.style.animation = 'none';
+                void coin.offsetWidth; // trigger reflow
+                coin.style.animation = result === 'cara' ? 'flipHeads 2s forwards' : 'flipTails 2s forwards';
+
+                setTimeout(() => {
+                    processResult(result);
+                    isAnimating = false;
+                    status.innerText = `¡Salió ${result.toUpperCase()}!`;
+                }, 2000);
+            } else {
+                status.innerText = "Lanzando 20 veces rápidamente...";
+                for(let i=0; i<times; i++) {
+                    const result = Math.random() < 0.5 ? 'cara' : 'cruz';
+                    processResult(result);
+                }
+                status.innerText = "Resultados de 20 lanzamientos procesados.";
+            }
+        }
+
+        function processResult(result) {
+            total++;
+            if (result === 'cara') heads++;
+            else tails++;
+
+            if (result === prediction) hits++;
+
+            const entry = document.createElement('div');
+            entry.innerText = `#${total}: ${result.toUpperCase()} ${result === prediction ? '✅' : '❌'}`;
+            const history = document.getElementById('history');
+            history.prepend(entry);
+            
+            updateStats();
+        }
+
+        // Inicializar
+        setPrediction('cara');
+    </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego 4: Contagio en el Salón</title>
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --casino-green: #0a4d2e;
+            --gold: #d4af37;
+            --dark: #0f0f0f;
+            --text-light: #e0e0e0;
+            --infected: #ff4757;
+            --healthy: #2ed573;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark);
+            color: var(--text-light);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, var(--casino-green) 0%, var(--dark) 80%);
+        }
+
+        .back-btn {
+            position: absolute; top: 20px; left: 20px; color: var(--gold);
+            text-decoration: none; border: 1px solid var(--gold); padding: 5px 15px;
+            border-radius: 5px; transition: 0.3s; z-index: 10;
+        }
+        .back-btn:hover { background: var(--gold); color: var(--dark); }
+
+        header { text-align: center; padding: 2rem; }
+        h1 { font-family: 'Goldman', cursive; color: var(--gold); }
+
+        .myth-box {
+            background: rgba(0, 0, 0, 0.6); border-left: 5px solid var(--gold);
+            padding: 1rem; margin: 1rem; max-width: 800px; border-radius: 0 10px 10px 0;
+        }
+
+        .game-area {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem;
+            width: 95%; max-width: 1200px; margin-bottom: 2rem;
+        }
+
+        .simulation-container {
+            flex: 1; min-width: 400px; background: rgba(0,0,0,0.4);
+            padding: 1rem; border-radius: 20px; border: 1px solid rgba(212,175,55,0.3);
+            position: relative; overflow: hidden;
+        }
+
+        canvas {
+            background: #111; border-radius: 10px; cursor: crosshair;
+            display: block; margin: 0 auto; width: 100%; max-width: 600px; height: 400px;
+        }
+
+        .controls-panel {
+            flex: 0 0 300px; background: rgba(0,0,0,0.5); padding: 1.5rem;
+            border-radius: 15px; border: 1px solid var(--gold);
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;
+            text-align: center; border: 1px solid rgba(212,175,55,0.1);
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        input[type="range"] { accent-color: var(--gold); }
+
+        .btn-action {
+            background: var(--gold); color: var(--dark); border: none;
+            padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-action:hover { transform: scale(1.05); filter: brightness(1.2); }
+        .btn-action:disabled { background: #555; cursor: not-allowed; }
+
+        .conclusion {
+            background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold);
+            padding: 1.5rem; margin: 2rem; max-width: 800px; border-radius: 10px;
+            text-align: center; display: none;
+        }
+
+        .bet-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: flex; align-items: center;
+            justify-content: center; z-index: 5; border-radius: 20px;
+        }
+        .bet-box { background: var(--dark); border: 2px solid var(--gold); padding: 2rem; border-radius: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Volver al Menú</a>
+
+    <header>
+        <h1>Contagio en el Salón</h1>
+    </header>
+
+    <div class="myth-box">
+        <p><strong>MITO:</strong> "El azar decide quién se enferma de forma aislada. No importa si estoy cerca de alguien contagiado, mi probabilidad es la misma."</p>
+    </div>
+
+    <main class="game-area">
+        <section class="simulation-container" id="simContainer">
+            <div class="bet-overlay" id="betOverlay">
+                <div class="bet-box">
+                    <h3>¿Crees que el contagio llegará a más del 50% del salón?</h3>
+                    <p>Apuesta 10 fichas</p>
+                    <button class="btn-action" onclick="startSim(true)">SÍ (MÁS DEL 50%)</button>
+                    <button class="btn-action" onclick="startSim(false)" style="background:#555; color:white;">NO (MENOS DEL 50%)</button>
+                </div>
+            </div>
+            <canvas id="simCanvas"></canvas>
+            <p style="text-align:center; margin-top:10px; font-size: 0.8rem; color:#888;">Las esferas representan personas en movimiento.</p>
+        </section>
+
+        <section class="controls-panel">
+            <div class="stat-box">
+                <p style="margin:0; font-size:0.8rem;">FICHAS</p>
+                <h2 id="balance" style="color:var(--gold); margin:0;">1000</h2>
+            </div>
+
+            <div class="control-group">
+                <label>Probabilidad de Contagio: <span id="probVal">30</span>%</label>
+                <input type="range" id="probRange" min="5" max="100" value="30" oninput="document.getElementById('probVal').innerText=this.value">
+            </div>
+
+            <div class="control-group">
+                <label>Personas en el salón: <span id="popVal">40</span></label>
+                <input type="range" id="popRange" min="10" max="100" value="40" oninput="document.getElementById('popVal').innerText=this.value">
+            </div>
+
+            <hr style="opacity:0.2;">
+            
+            <div class="stat-box">
+                <p>Saludables: <span id="healthyCount" style="color:var(--healthy)">0</span></p>
+                <p>Contagiados: <span id="infectedCount" style="color:var(--infected)">0</span></p>
+                <p>Progreso: <span id="progVal">0</span>%</p>
+            </div>
+
+            <button class="btn-action" id="resetBtn" onclick="resetGame()" style="display:none; background:#ff4757; color:white;">Reiniciar Simulación</button>
+        </section>
+    </main>
+
+    <div class="conclusion" id="conclusionBox">
+        <h3>💡 Conclusión Matemática</h3>
+        <p>Este es un ejemplo de <strong>probabilidad condicional</strong>. La probabilidad de que una persona se contagie <i>dado que</i> ha tenido contacto con alguien infectado es mucho mayor que al azar. Los eventos están encadenados: un solo caso inicial puede cambiar drásticamente el estado de todo el sistema.</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let isRunning = false;
+        let balance = 1000;
+        let userBet = true; // true = >50%
+        let animationId;
+
+        // Configuración de Canvas
+        canvas.width = 600;
+        canvas.height = 400;
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.radius = 6;
+                this.status = 'healthy'; // healthy, infected
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.status === 'healthy' ? '#2ed573' : '#ff4757';
+                ctx.fill();
+                if (this.status === 'infected') {
+                    ctx.strokeStyle = 'rgba(255, 71, 87, 0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                ctx.closePath();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+        }
+
+        function initParticles() {
+            const count = document.getElementById('popRange').value;
+            particles = [];
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+            particles[0].status = 'infected';
+        }
+
+        function startSim(bet) {
+            userBet = bet;
+            document.getElementById('betOverlay').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            isRunning = true;
+            initParticles();
+            loop();
+        }
+
+        function loop() {
+            if (!isRunning) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let infected = 0;
+            const prob = document.getElementById('probRange').value / 100;
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+                if (p.status === 'infected') infected++;
+            });
+
+            // Lógica de contagio por colisión
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p1 = particles[i];
+                    const p2 = particles[j];
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < p1.radius + p2.radius) {
+                        if (p1.status === 'infected' && p2.status === 'healthy') {
+                            if (Math.random() < prob) p2.status = 'infected';
+                        } else if (p2.status === 'infected' && p1.status === 'healthy') {
+                            if (Math.random() < prob) p1.status = 'infected';
+                        }
+                    }
+                }
+            }
+
+            const total = particles.length;
+            const healthy = total - infected;
+            const perc = Math.round((infected / total) * 100);
+
+            document.getElementById('infectedCount').innerText = infected;
+            document.getElementById('healthyCount').innerText = healthy;
+            document.getElementById('progVal').innerText = perc;
+
+            if (infected === total || (infected > 0 && particles.every(p => p.vx === 0))) {
+                endSim(perc);
+                return;
+            }
+
+            if (infected > 0) {
+                animationId = requestAnimationFrame(loop);
+            }
+            
+            if (infected === total) endSim(perc);
+        }
+
+        function endSim(finalPerc) {
+            isRunning = false;
+            cancelAnimationFrame(animationId);
+            
+            const won = (userBet && finalPerc > 50) || (!userBet && finalPerc <= 50);
+            if (won) {
+                balance += 10;
+            } else {
+                balance -= 10;
+            }
+
+            document.getElementById('balance').innerText = balance;
+            document.getElementById('resetBtn').style.display = 'block';
+            document.getElementById('conclusionBox').style.display = 'block';
+        }
+
+        function resetGame() {
+            document.getElementById('betOverlay').style.display = 'flex';
+            document.getElementById('resetBtn').style.display = 'none';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('progVal').innerText = '0';
+        }
+
+        initParticles();
+        particles.forEach(p => p.draw());
+    </script>
+</body>
+</html>

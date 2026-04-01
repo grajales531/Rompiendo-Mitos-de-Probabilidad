@@ -1,0 +1,19 @@
+Crea el MINIJUEGO 7 llamado “¿Qué número saldrá?”.
+
+Mito:
+“Los números tienen patrones.”
+
+Juego:
+- Ruleta de números del 1 al 10
+- El usuario predice el siguiente número
+- Cada tiro cuesta 10 fichas
+- Acierto: +10
+- Error: -10
+- Mostrar:
+  - Historial de números
+  - Gráfico de resultados
+  - Aciertos y fallos
+
+Conclusión:
+Los patrones percibidos no existen.
+``
