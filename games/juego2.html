@@ -267,7 +267,7 @@
             }
 
             isSpinning = true;
-            document.getElementById('status-text').innerText = "¡La bola está girando!";
+            document.getElementById('status-text').innerHTML = "¡La bola está girando! <br><span style='font-size:0.8rem; color:var(--gold)'>Calculando trayectoria...</span>";
             
             // 1. Decidimos la fuerza del giro (ángulo aleatorio)
             const extraSpins = (10 + Math.floor(Math.random() * 5)) * 360; 
@@ -277,7 +277,7 @@
             const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-            // 2. Calculamos el resultado basándonos ÚNICAMENTE en dónde se detuvo
+            // 2. Calculamos el resultado basándonos ÚNICAMENTE en dónde se detuvo el DOM al final
             setTimeout(() => {
                 isSpinning = false;
                 
@@ -288,9 +288,10 @@
                 // El puntero está arriba (0°). Al rotar la rueda +X grados, 
                 // el puntero apunta al sector que estaba en (360 - X)
                 const winningIndex = (37 - Math.floor(normalizedAngle / sectorDegrees)) % 37;
-                const winningNumber = rouletteNumbers[winningIndex];
+                const winner = rouletteNumbers[winningIndex];
                 
-                processResult(choice, amount, winningNumber);
+                // Procesamos el resultado con datos frescos
+                processResult(choice, amount, winner);
             }, 4000);
         }
 
@@ -299,14 +300,12 @@
 
         function processResult(choice, amount, winner) {
             totalPlays++;
-            let win = false;
+            let win = (choice === winner.c);
             let profit = 0;
 
-            if (choice === winner.c) {
-                win = true;
-                // Si es verde paga 35 a 1 en la vida real, pero el prompt dice "duplica"
-                // Para ser fieles al prompt pero realistas con el riesgo, el verde pagará x10
-                profit = choice === 'verde' ? amount * 10 : amount;
+            if (win) {
+                // Si es verde paga 10x, si es rojo/negro duplica lo apostado
+                profit = (winner.c === 'verde') ? amount * 10 : amount;
                 balance += profit;
             } else {
                 profit = -amount;
