@@ -240,10 +240,14 @@
             const sectorDegrees = 360 / 37;
             let gradient = "conic-gradient(";
             
+            // Aplicamos un desfase inicial de medio sector para que el puntero 
+            // quede en el CENTRO del primer color (el verde) cuando rotación = 0
+            const startOffset = - (sectorDegrees / 2);
+            
             rouletteNumbers.forEach((num, i) => {
                 const color = num.c === 'verde' ? 'var(--green)' : (num.c === 'rojo' ? 'var(--red)' : 'var(--black)');
-                const start = i * sectorDegrees;
-                const end = (i + 1) * sectorDegrees;
+                const start = (i * sectorDegrees) + startOffset;
+                const end = ((i + 1) * sectorDegrees) + startOffset;
                 gradient += `${color} ${start}deg ${end}deg${i === 36 ? '' : ','}`;
             });
             
@@ -267,7 +271,7 @@
             }
 
             isSpinning = true;
-            document.getElementById('status-text').innerHTML = "¡La bola está girando! <br><span style='font-size:0.8rem; color:var(--gold)'>Calculando trayectoria...</span>";
+            document.getElementById('status-text').innerHTML = "¡La bola está girando! <br><span style='font-size:0.8rem; color:var(--gold)'>Sincronizando física visual...</span>";
             
             // 1. Decidimos la fuerza del giro (ángulo aleatorio)
             const extraSpins = (10 + Math.floor(Math.random() * 5)) * 360; 
@@ -285,8 +289,10 @@
                 const normalizedAngle = currentRotation % 360;
                 const sectorDegrees = 360 / 37;
                 
-                // El puntero está arriba (0°). Al rotar la rueda +X grados, 
-                // el puntero apunta al sector que estaba en (360 - X)
+                // CÁLCULO GEOMÉTRICO ROBUSTO:
+                // Como giramos en sentido horario (+), el puntero retrocede por el array.
+                // El winningIndex es (37 - floor(angulo / sector)) % 37.
+                // No necesitamos offset en el cálculo porque ya lo aplicamos al gradiente visual.
                 const winningIndex = (37 - Math.floor(normalizedAngle / sectorDegrees)) % 37;
                 const winner = rouletteNumbers[winningIndex];
                 
