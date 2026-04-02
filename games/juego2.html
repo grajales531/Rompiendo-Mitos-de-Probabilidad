@@ -234,6 +234,23 @@
             { n: 26, c: 'negro' }
         ];
 
+        // Generar la ruleta visualmente basada en el array de números (Fuente de Verdad Única)
+        function initWheel() {
+            const wheel = document.getElementById('wheel');
+            const sectorDegrees = 360 / 37;
+            let gradient = "conic-gradient(";
+            
+            rouletteNumbers.forEach((num, i) => {
+                const color = num.c === 'verde' ? 'var(--green)' : (num.c === 'rojo' ? 'var(--red)' : 'var(--black)');
+                const start = i * sectorDegrees;
+                const end = (i + 1) * sectorDegrees;
+                gradient += `${color} ${start}deg ${end}deg${i === 36 ? '' : ','}`;
+            });
+            
+            gradient += ")";
+            wheel.style.background = gradient;
+        }
+
         function play(choice) {
             if (isSpinning) return;
             const amount = parseInt(document.getElementById('betAmount').value);
@@ -252,35 +269,33 @@
             isSpinning = true;
             document.getElementById('status-text').innerText = "¡La bola está girando!";
             
-            // 1. Elegir el ganador aleatoriamente
-            const winningIndex = Math.floor(Math.random() * 37);
-            const winningNumber = rouletteNumbers[winningIndex];
-            
-            // 2. Calcular rotación técnica
-            // Cada sector mide exactamente 360/37 grados
-            const sectorDegrees = 360 / 37;
-            
-            // Queremos que el sector 'winningIndex' termine en el puntero (arriba, 0 grados)
-            // La ruleta visual (gradiente) tiene el índice 0 en el tope a 0deg.
-            // Para que el índice N llegue al tope girando en sentido horario,
-            // debemos rotar (360 - (N * sectorDegrees))
-            
-            const extraSpins = (5 + Math.floor(Math.random() * 3)) * 360;
-            const targetSectorAngle = (360 - (winningIndex * sectorDegrees));
-            
-            // Acumulamos la rotación para que la animación siempre sea hacia adelante
-            // Calculamos cuánto falta para completar la vuelta actual y luego sumamos el objetivo
-            const currentModulo = currentRotation % 360;
-            currentRotation += extraSpins + (targetSectorAngle - currentModulo + 360) % 360;
+            // 1. Decidimos la fuerza del giro (ángulo aleatorio)
+            const extraSpins = (10 + Math.floor(Math.random() * 5)) * 360; 
+            const randomAngle = Math.random() * 360;
+            currentRotation += extraSpins + randomAngle;
             
             const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${currentRotation}deg)`;
 
+            // 2. Calculamos el resultado basándonos ÚNICAMENTE en dónde se detuvo
             setTimeout(() => {
                 isSpinning = false;
+                
+                // Normalizamos el ángulo final a un rango de 0-360
+                const normalizedAngle = currentRotation % 360;
+                const sectorDegrees = 360 / 37;
+                
+                // El puntero está arriba (0°). Al rotar la rueda +X grados, 
+                // el puntero apunta al sector que estaba en (360 - X)
+                const winningIndex = (37 - Math.floor(normalizedAngle / sectorDegrees)) % 37;
+                const winningNumber = rouletteNumbers[winningIndex];
+                
                 processResult(choice, amount, winningNumber);
             }, 4000);
         }
+
+        // Inicializar ruleta al cargar
+        initWheel();
 
         function processResult(choice, amount, winner) {
             totalPlays++;
