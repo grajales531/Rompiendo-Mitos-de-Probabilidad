@@ -60,45 +60,6 @@
         }
         .wheel {
             width: 100%; height: 100%; border-radius: 50%; border: 8px solid #3d2b1f;
-            background: conic-gradient(
-                var(--green) 0deg 9.72deg,
-                var(--red) 9.72deg 19.44deg,
-                var(--black) 19.44deg 29.16deg,
-                var(--red) 29.16deg 38.88deg,
-                var(--black) 38.88deg 48.6deg,
-                var(--red) 48.6deg 58.32deg,
-                var(--black) 58.32deg 68.04deg,
-                var(--red) 68.04deg 77.76deg,
-                var(--black) 77.76deg 87.48deg,
-                var(--red) 87.48deg 97.2deg,
-                var(--black) 97.2deg 106.92deg,
-                var(--black) 106.92deg 116.64deg,
-                var(--red) 116.64deg 126.36deg,
-                var(--black) 126.36deg 136.08deg,
-                var(--red) 136.08deg 145.8deg,
-                var(--black) 145.8deg 155.52deg,
-                var(--red) 155.52deg 165.24deg,
-                var(--black) 165.24deg 174.96deg,
-                var(--red) 174.96deg 184.68deg,
-                var(--red) 184.68deg 194.4deg,
-                var(--black) 194.4deg 204.12deg,
-                var(--red) 204.12deg 213.84deg,
-                var(--black) 213.84deg 223.56deg,
-                var(--red) 223.56deg 233.28deg,
-                var(--black) 233.28deg 243deg,
-                var(--red) 243deg 252.72deg,
-                var(--black) 252.72deg 262.44deg,
-                var(--red) 262.44deg 272.16deg,
-                var(--black) 272.16deg 281.88deg,
-                var(--black) 281.88deg 291.6deg,
-                var(--red) 291.6deg 301.32deg,
-                var(--black) 301.32deg 311.04deg,
-                var(--red) 311.04deg 320.76deg,
-                var(--black) 320.76deg 330.48deg,
-                var(--red) 330.48deg 340.2deg,
-                var(--black) 340.2deg 349.92deg,
-                var(--red) 349.92deg 360deg
-            );
             transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
             position: relative;
         }
@@ -240,14 +201,12 @@
             const sectorDegrees = 360 / 37;
             let gradient = "conic-gradient(";
             
-            // Aplicamos un desfase inicial de medio sector para que el puntero 
-            // quede en el CENTRO del primer color (el verde) cuando rotación = 0
-            const startOffset = - (sectorDegrees / 2);
-            
+            // Centramos cada sector: el sector i estará entre (i-0.5)*SD y (i+0.5)*SD
+            // Esto hace que el índice 0 (verde) esté centrado exactamente arriba (0°)
             rouletteNumbers.forEach((num, i) => {
                 const color = num.c === 'verde' ? 'var(--green)' : (num.c === 'rojo' ? 'var(--red)' : 'var(--black)');
-                const start = (i * sectorDegrees) + startOffset;
-                const end = ((i + 1) * sectorDegrees) + startOffset;
+                const start = (i * sectorDegrees) - (sectorDegrees / 2);
+                const end = ((i + 1) * sectorDegrees) - (sectorDegrees / 2);
                 gradient += `${color} ${start}deg ${end}deg${i === 36 ? '' : ','}`;
             });
             
@@ -273,27 +232,28 @@
             isSpinning = true;
             document.getElementById('status-text').innerHTML = "¡La bola está girando! <br><span style='font-size:0.8rem; color:var(--gold)'>Sincronizando física visual...</span>";
             
-            // 1. Decidimos la fuerza del giro (ángulo aleatorio)
+            // 1. Decidimos la fuerza del giro (ángulo aleatorio positivo)
             const extraSpins = (10 + Math.floor(Math.random() * 5)) * 360; 
             const randomAngle = Math.random() * 360;
             currentRotation += extraSpins + randomAngle;
             
             const wheel = document.getElementById('wheel');
+            // Rotación Horaria (Derecha)
             wheel.style.transform = `rotate(${currentRotation}deg)`;
 
             // 2. Calculamos el resultado basándonos ÚNICAMENTE en dónde se detuvo el DOM al final
             setTimeout(() => {
                 isSpinning = false;
                 
-                // Normalizamos el ángulo final a un rango de 0-360
-                const normalizedAngle = currentRotation % 360;
                 const sectorDegrees = 360 / 37;
+                // Ángulo normalizado entre 0 y 360
+                const normalizedAngle = currentRotation % 360;
                 
-                // CÁLCULO GEOMÉTRICO ROBUSTO:
-                // Como giramos en sentido horario (+), el puntero retrocede por el array.
-                // El winningIndex es (37 - floor(angulo / sector)) % 37.
-                // No necesitamos offset en el cálculo porque ya lo aplicamos al gradiente visual.
-                const winningIndex = (37 - Math.floor(normalizedAngle / sectorDegrees)) % 37;
+                // FÓRMULA MAESTRA:
+                // Al girar la rueda hacia la derecha (CW), los números pasan por el puntero fijo (0°) 
+                // en orden inverso (0, 36, 35...). 
+                // Usamos Math.round sobre la posición invertida para obtener el centro del sector.
+                const winningIndex = Math.round((360 - normalizedAngle) / sectorDegrees) % 37;
                 const winner = rouletteNumbers[winningIndex];
                 
                 // Procesamos el resultado con datos frescos
@@ -310,7 +270,6 @@
             let profit = 0;
 
             if (win) {
-                // Si es verde paga 10x, si es rojo/negro duplica lo apostado
                 profit = (winner.c === 'verde') ? amount * 10 : amount;
                 balance += profit;
             } else {
