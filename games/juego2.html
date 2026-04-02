@@ -252,16 +252,29 @@
             isSpinning = true;
             document.getElementById('status-text').innerText = "¡La bola está girando!";
             
+            // 1. Elegir el ganador aleatoriamente
             const winningIndex = Math.floor(Math.random() * 37);
             const winningNumber = rouletteNumbers[winningIndex];
             
-            // Calcular rotación (cada número ocupa ~9.72 grados)
-            const extraDegrees = (winningIndex * (360/37));
-            const totalSpins = 5 + Math.floor(Math.random() * 5);
-            currentRotation += (totalSpins * 360) + extraDegrees;
+            // 2. Calcular rotación técnica
+            // Cada sector mide exactamente 360/37 grados
+            const sectorDegrees = 360 / 37;
+            
+            // Queremos que el sector 'winningIndex' termine en el puntero (arriba, 0 grados)
+            // La ruleta visual (gradiente) tiene el índice 0 en el tope a 0deg.
+            // Para que el índice N llegue al tope girando en sentido horario,
+            // debemos rotar (360 - (N * sectorDegrees))
+            
+            const extraSpins = (5 + Math.floor(Math.random() * 3)) * 360;
+            const targetSectorAngle = (360 - (winningIndex * sectorDegrees));
+            
+            // Acumulamos la rotación para que la animación siempre sea hacia adelante
+            // Calculamos cuánto falta para completar la vuelta actual y luego sumamos el objetivo
+            const currentModulo = currentRotation % 360;
+            currentRotation += extraSpins + (targetSectorAngle - currentModulo + 360) % 360;
             
             const wheel = document.getElementById('wheel');
-            wheel.style.transform = `rotate(-${currentRotation}deg)`;
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
                 isSpinning = false;
